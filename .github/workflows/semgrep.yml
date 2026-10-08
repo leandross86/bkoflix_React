@@ -1,0 +1,36 @@
+name: Semgrep SAST
+
+on:
+  push:
+    branches: [ "main"]
+  pull_request:
+    branches: [ "main" ]
+  workflow_dispatch:
+
+jobs:
+  semgrep:
+    name: Scan
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      security-events: write
+      pull-requests: write
+    steps:
+      - name: Checkout do código
+        uses: actions/checkout@v4
+
+      - name: Executar Semgrep SAST
+        uses: returntocorp/semgrep-action@v1
+        with:
+          # Define o conjunto de regras (ex: regras padrão da comunidade)
+          config: p/default
+          
+          # Enviar resultados para o GitHub Security Dashboard (opcional)
+          generateSarif: '1'
+
+      # Opcional: faz upload do arquivo SARIF para a aba "Security" do GitHub
+      - name: Enviar relatório SARIF para o GitHub Security
+        uses: github/codeql-action/upload-sarif@v3
+        if: always()
+        with:
+          sarif_file: semgrep.sarif
